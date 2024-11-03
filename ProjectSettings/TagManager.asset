@@ -6,15 +6,16 @@ TagManager:
   tags:
   - CinemachineTarget
   - Enemy
+  - Weapon
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - PostProcessing
   - Water
   - UI
-  - 
-  - 
+  - Enemy
+  - Wepon
   - 
   - 
   - 

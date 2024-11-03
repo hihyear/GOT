@@ -98,6 +98,12 @@ namespace StarterAssets
         private int _animIDFreeFall;
         private int _animIDMotionSpeed;
 
+        // add
+        private int _animIDAttack;
+        bool isAttacking = false;
+        public GameObject Weapon;
+
+
 #if ENABLE_INPUT_SYSTEM 
         private PlayerInput _playerInput;
 #endif
@@ -173,6 +179,8 @@ namespace StarterAssets
             _animIDJump = Animator.StringToHash("Jump");
             _animIDFreeFall = Animator.StringToHash("FreeFall");
             _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
+
+            _animIDAttack = Animator.StringToHash("Attack");
         }
 
         private void GroundedCheck()
@@ -389,34 +397,53 @@ namespace StarterAssets
             }
         }
 
-        private void OnCollisionEnter(Collision collision)
-        {
-            if(collision.gameObject.tag == "Enemy")
-            {
-                collision.gameObject.GetComponent<Renderer>().material.color = Color.red;
-            }
+        //private void OnCollisionEnter(Collision collision)
+        //{
+        //    if(collision.gameObject.tag == "Enemy")
+        //    {
+        //        collision.gameObject.GetComponent<Renderer>().material.color = Color.red;
+        //    }
 
-            Debug.Log("Collision Enter");
+        //    Debug.Log("Collision Enter");
+        //}
+
+        //private void OnTriggerEnter(Collider other)
+        //{
+        //    if (other.gameObject.tag == "Enemy")
+        //    {
+        //        other.gameObject.GetComponentInChildren<MeshRenderer>().material.color = Color.red;
+        //    }
+
+        //    Debug.Log("TriggerEnter");
+        //}
+
+        //private void OnTriggerExit(Collider other)
+        //{
+        //    if (other.gameObject.tag == "Enemy")
+        //    {
+        //        other.gameObject.GetComponentInChildren<MeshRenderer>().material.color = Color.white;
+        //    }
+
+        //    Debug.Log("TriggerExit");
+        //}
+
+
+
+
+        public void OnAttackEnter()
+        {
+            if(isAttacking == false)
+            {
+                isAttacking = true;
+                Weapon.GetComponent<Collider>().enabled = true;
+                _animator.SetTrigger(_animIDAttack);
+            }
         }
 
-        private void OnTriggerEnter(Collider other)
+        public void OnAttackExit()
         {
-            if (other.gameObject.tag == "Enemy")
-            {
-                other.gameObject.GetComponentInChildren<MeshRenderer>().material.color = Color.red;
-            }
-
-            Debug.Log("TriggerEnter");
-        }
-
-        private void OnTriggerExit(Collider other)
-        {
-            if (other.gameObject.tag == "Enemy")
-            {
-                other.gameObject.GetComponentInChildren<MeshRenderer>().material.color = Color.white;
-            }
-
-            Debug.Log("TriggerExit");
+            Weapon.GetComponent<Collider>().enabled = false;
+            isAttacking = false;
         }
     }
 }
