@@ -11,7 +11,7 @@ public class GOTEnemy : MonoBehaviour
    {
        if (other.tag == "Weapon")
        {
-           gameObject.GetComponentInChildren<MeshRenderer>().material.color = Color.yellow;
+           gameObject.GetComponentInChildren<SkinnedMeshRenderer>().material.color = Color.yellow;
            Invoke("ReturnColor", 0.2f);
 
             Vector3 hitPoint = other.transform.position;
