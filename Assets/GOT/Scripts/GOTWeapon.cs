@@ -1,17 +1,39 @@
+using StarterAssets;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GOTWeapon : MonoBehaviour
 {
     public ParticleSystem hitVfx;                   
     public bool bAttacking = false;                     // true인 동안에만 공격 이벤트 가능 (걸어다닐때도 공격되면 안되니까,,)
 
+    [Header("UI")]
+    public Slider Slider_Hp;
+    public Slider Slider_Gauge;
+    public TextMeshProUGUI Txt_Kill;
+
+    int _maxGauge = 5;
+    int _currentGauge = 0;
+
+    int _killCount = 0;
+
+    // Weapon에 hp를 넣는게 맞는지는 모르겠지만...
+    int _maxHp = 10;
+    int _currentHp = 10;
+
+    bool bArmor = false;
+
     Collider _col;
+    ThirdPersonController _player;
     
     void Start()
     {
         _col = GetComponent<SphereCollider>();
+        _player = GetComponentInParent<ThirdPersonController>();
     }
 
 
@@ -45,6 +67,7 @@ public class GOTWeapon : MonoBehaviour
 
                 // 적 피격 함수 실행
                 e.OnHit(hitPoint);
+                IncreaseGauge();
 
                 // 이펙트 Spawn
                 float s = Random.Range(0.1f, 0.3f);
@@ -56,5 +79,23 @@ public class GOTWeapon : MonoBehaviour
                 bAttacking = false;
             }
         }
+    }
+
+    private void IncreaseGauge()
+    {
+        _currentGauge = Mathf.Clamp(_currentGauge + 1, 0, _maxGauge);
+        Slider_Gauge.value = (float)_currentGauge/(float)_maxGauge;
+
+        _killCount++;
+        Txt_Kill.text = $"Kill : {_killCount}";
+    }
+
+    public void OnHit(Vector3 hitPoint)
+    {
+        if (bArmor) return;
+
+        _player.OnHitAnimation();
+        _currentHp = Mathf.Clamp(_currentHp - 1, 0, _maxHp);
+        Slider_Hp.value = (float)_currentHp / (float)_maxHp;
     }
 }

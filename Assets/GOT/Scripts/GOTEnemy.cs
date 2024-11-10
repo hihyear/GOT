@@ -8,8 +8,12 @@ using UnityEngine.AI;
 public class GOTEnemy : MonoBehaviour
 {
     public float forcePower = 500.0f;
+    public GOTWeapon_Enemy Weapon;
 
+    bool isAttacking = false;
     bool isDead = false;
+
+    Coroutine co;
 
     Animator _anim;
     Material _mat;
@@ -33,7 +37,9 @@ public class GOTEnemy : MonoBehaviour
 
     private void Update()
     {
-        if(_player != null)
+        if (isDead) return;
+        
+        if (_player != null)
         {
             // 플레이어가 있는곳으로 이동
             _nav.SetDestination(_player.transform.position);
@@ -41,7 +47,14 @@ public class GOTEnemy : MonoBehaviour
             // 애니메이션 설정
             if (_nav.velocity.sqrMagnitude == 0.0f)
             {
-                _anim.SetBool("Move", false);
+                if (Vector3.Distance(transform.position, _player.transform.position) <= 2.0f && isAttacking == false)
+                {
+                    OnAttackEnter();
+                }
+                else
+                {
+                    _anim.SetBool("Move", false);
+                }
             }
             else
             {
@@ -55,18 +68,20 @@ public class GOTEnemy : MonoBehaviour
     {
         // 이미 죽은경우에는 넘어간다
         if (isDead) return;
-        
+
+        StopCoroutine(co);
         ChangeHitColor();
 
         // 밀려나기
-        if (_rb != null)
-        {
-            Vector3 direction = (transform.position - attackPos).normalized;
-           _rb.AddForce(direction * forcePower);
-        }
+        //if (_rb != null)
+        //{
+        //    Vector3 direction = (transform.position - attackPos).normalized;
+        //   _rb.AddForce(direction * forcePower);
+        //}
 
-        // TODO : 꺼지긴 하는데 여전히 걸리적거림;
+        // 죽어서 걸리적거리는거 없애기
         _col.enabled = false;
+        _rb.isKinematic = true;
 
         _anim.SetTrigger("Dead");
         Destroy(gameObject, 3.0f);
@@ -82,5 +97,29 @@ public class GOTEnemy : MonoBehaviour
     private void ReturnColor()
     {
         _mat.color = Color.white;
+    }
+
+    public void OnAttackEnter()
+    {
+        if (isAttacking == false)
+        {
+            isAttacking = true;
+            Weapon.bAttacking = true;
+            _anim.SetTrigger("Attack");
+
+            co = StartCoroutine(SetIsAttackingFalse());
+        }
+    }
+
+    public void OnAttackExit()
+    {
+        Weapon.bAttacking = false;
+    }
+
+    // 무한 연속공격(?) 방지
+    IEnumerator SetIsAttackingFalse()
+    {
+        yield return new WaitForSeconds(3.0f);
+        isAttacking = false;
     }
 }

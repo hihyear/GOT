@@ -100,6 +100,7 @@ namespace StarterAssets
 
         // add
         private int _animIDAttack;
+        private int _animIDHit;
         bool isAttacking = false;
         public GOTWeapon Weapon;
 
@@ -181,6 +182,7 @@ namespace StarterAssets
             _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
 
             _animIDAttack = Animator.StringToHash("Attack");
+            _animIDHit = Animator.StringToHash("Hit");
         }
 
         private void GroundedCheck()
@@ -444,6 +446,12 @@ namespace StarterAssets
         {
             Weapon.bAttacking = false;
             isAttacking = false;
+        }
+
+        public void OnHitAnimation()
+        {
+            _animator.SetTrigger(_animIDHit);
+            OnAttackExit();
         }
     }
 }
