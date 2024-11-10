@@ -101,7 +101,7 @@ namespace StarterAssets
         // add
         private int _animIDAttack;
         bool isAttacking = false;
-        public GameObject Weapon;
+        public GOTWeapon Weapon;
 
 
 #if ENABLE_INPUT_SYSTEM 
@@ -435,14 +435,14 @@ namespace StarterAssets
             if(isAttacking == false)
             {
                 isAttacking = true;
-                Weapon.GetComponent<Collider>().enabled = true;
+                Weapon.bAttacking = true;
                 _animator.SetTrigger(_animIDAttack);
             }
         }
 
         public void OnAttackExit()
         {
-            Weapon.GetComponent<Collider>().enabled = false;
+            Weapon.bAttacking = false;
             isAttacking = false;
         }
     }

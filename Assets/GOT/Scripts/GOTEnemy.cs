@@ -1,73 +1,86 @@
+using StarterAssets;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class GOTEnemy : MonoBehaviour
 {
-    public ParticleSystem hitVfx;
     public float forcePower = 500.0f;
 
-   private void OnTriggerEnter(Collider other)
-   {
-       if (other.tag == "Weapon")
-       {
-           gameObject.GetComponentInChildren<SkinnedMeshRenderer>().material.color = Color.yellow;
-           Invoke("ReturnColor", 0.2f);
+    bool isDead = false;
 
-            Vector3 hitPoint = other.transform.position;
-            Instantiate(hitVfx, hitPoint, Quaternion.identity);
+    Animator _anim;
+    Material _mat;
+    NavMeshAgent _nav;
+    Collider _col;
+    Rigidbody _rb;
 
+    ThirdPersonController _player;
 
-            Rigidbody rb = GetComponent<Rigidbody>();
-            if (rb != null)
-            {
-                Vector3 direction = (transform.position - hitPoint).normalized;
-                
-                rb.AddForce(direction * forcePower);
-            }
-
-            Debug.Log($"TriggerEnter : {other.name}");
-       }
-   
-   }
-
-   //
-   //private void OnTriggerExit(Collider other)
-   //{
-   //    if (other.tag == "Weapon")
-   //    {
-   //        gameObject.GetComponentInChildren<MeshRenderer>().material.color = Color.white;
-   //    }
-   //
-   //    Debug.Log("TriggerExit");
-   //}
-
-    private void OnCollisionEnter(Collision collision)
+    private void Start()
     {
-        if (collision.collider.tag == "Weapon")
-        {
-            gameObject.GetComponentInChildren<MeshRenderer>().material.color = Color.red;
-            Invoke("ReturnColor", 0.2f);
+       _anim = GetComponentInChildren<Animator>();
+       _mat = GetComponentInChildren<SkinnedMeshRenderer>().material;
+       _nav = GetComponentInChildren<NavMeshAgent>();
+       _col = GetComponentInChildren<CapsuleCollider>();
+       _rb = GetComponentInChildren<Rigidbody>();
 
-            Vector3 hitPoint = collision.contacts[0].point;
-            Instantiate(hitVfx, hitPoint, Quaternion.identity);
-            
-            Debug.Log("OnCollisionEnter");
+       _player = FindObjectOfType<ThirdPersonController>();
+    }
+
+
+    private void Update()
+    {
+        if(_player != null)
+        {
+            // 플레이어가 있는곳으로 이동
+            _nav.SetDestination(_player.transform.position);
+
+            // 애니메이션 설정
+            if (_nav.velocity.sqrMagnitude == 0.0f)
+            {
+                _anim.SetBool("Move", false);
+            }
+            else
+            {
+                _anim.SetBool("Move", true);
+            }
         }
     }
 
-    void ReturnColor()
+
+    public void OnHit(Vector3 attackPos)
     {
-        gameObject.GetComponentInChildren<MeshRenderer>().material.color = Color.white;
+        // 이미 죽은경우에는 넘어간다
+        if (isDead) return;
+        
+        ChangeHitColor();
+
+        // 밀려나기
+        if (_rb != null)
+        {
+            Vector3 direction = (transform.position - attackPos).normalized;
+           _rb.AddForce(direction * forcePower);
+        }
+
+        // TODO : 꺼지긴 하는데 여전히 걸리적거림;
+        _col.enabled = false;
+
+        _anim.SetTrigger("Dead");
+        Destroy(gameObject, 3.0f);
     }
 
-    private void OnCollisionExit(Collision collision)
+ 
+    public void ChangeHitColor()
     {
-        //if (collision.collider.tag == "Weapon")
-        //
-        //   gameObject.GetComponentInChildren<MeshRenderer>().material.color = Color.white;
-        //
+        _mat.color = Color.red;
+        Invoke("ReturnColor", 0.1f);
+    }
 
-        Debug.Log("OnCollisionExit");
+    private void ReturnColor()
+    {
+        _mat.color = Color.white;
     }
 }
