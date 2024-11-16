@@ -64,12 +64,21 @@ public class GOTEnemy : MonoBehaviour
     }
 
 
-    public void OnHit(Vector3 attackPos)
+    public void OnHit(Vector3 attackPos, GOTWeapon attacker)
     {
         // 이미 죽은경우에는 넘어간다
-        if (isDead) return;
+        if (isDead)
+        {
+            if (co != null)
+                StopCoroutine(co);
+            return;
+        }
 
-        StopCoroutine(co);
+        isDead = true;
+        attacker.IncreaseKillCount();
+
+        if(co != null)
+            StopCoroutine(co);
         ChangeHitColor();
 
         // 밀려나기

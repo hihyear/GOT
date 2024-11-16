@@ -5,6 +5,8 @@ using UnityEngine.InputSystem;
 
 namespace StarterAssets
 {
+	// Input 신호만 받아서 넘기는 스크립트
+
 	public class StarterAssetsInputs : MonoBehaviour
 	{
 		[Header("Character Input Values")]
@@ -14,6 +16,7 @@ namespace StarterAssets
 		public bool sprint;
 
 		public bool attack;
+		public bool skill;
 
 		[Header("Movement Settings")]
 		public bool analogMovement;
@@ -49,6 +52,11 @@ namespace StarterAssets
 		public void OnAttack(InputValue value)
 		{
 			AttackInput(value.isPressed);
+		}
+
+		public void OnSkill(InputValue value)
+		{
+			SkillInput(value.isPressed);
 		}
 #endif
 
@@ -92,9 +100,19 @@ namespace StarterAssets
 			if (thirdPersonController != null)
 			{
 				thirdPersonController.OnAttackEnter();
-
             }
 		}
+
+		public void SkillInput(bool newSKillState)
+		{
+			skill = newSKillState;
+
+            ThirdPersonController thirdPersonController = gameObject.GetComponent<ThirdPersonController>();
+            if (thirdPersonController != null)
+            {
+                thirdPersonController.OnSkillEnter();
+            }
+        }
 	}
 	
 }

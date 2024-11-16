@@ -99,10 +99,16 @@ namespace StarterAssets
         private int _animIDMotionSpeed;
 
         // add
+        Rigidbody _rb;
+
         private int _animIDAttack;
+        private int _animIDSkill;
         private int _animIDHit;
         bool isAttacking = false;
+        bool isSkilling = false;
         public GOTWeapon Weapon;
+
+        float rY;
 
 
 #if ENABLE_INPUT_SYSTEM 
@@ -146,9 +152,11 @@ namespace StarterAssets
             _hasAnimator = TryGetComponent(out _animator);
             _controller = GetComponent<CharacterController>();
             _input = GetComponent<StarterAssetsInputs>();
+            _rb = GetComponent<Rigidbody>();
 #if ENABLE_INPUT_SYSTEM 
             _playerInput = GetComponent<PlayerInput>();
-#else
+#else       
+
 			Debug.LogError( "Starter Assets package is missing dependencies. Please use Tools/Starter Assets/Reinstall Dependencies to fix it");
 #endif
 
@@ -166,6 +174,12 @@ namespace StarterAssets
             JumpAndGravity();
             GroundedCheck();
             Move();
+
+            // 리지드바디 짜증나서 그냥 이렇게 함 ㅠ
+            if(isSkilling)
+            {
+                transform.position += (transform.up.normalized * 20.0f * Time.deltaTime);
+            }
         }
 
         private void LateUpdate()
@@ -182,6 +196,7 @@ namespace StarterAssets
             _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
 
             _animIDAttack = Animator.StringToHash("Attack");
+            _animIDSkill = Animator.StringToHash("Skill");
             _animIDHit = Animator.StringToHash("Hit");
         }
 
@@ -230,7 +245,7 @@ namespace StarterAssets
 
             // note: Vector2's == operator uses approximation so is not floating point error prone, and is cheaper than magnitude
             // if there is no input, set the target speed to 0
-            if (_input.move == Vector2.zero) targetSpeed = 0.0f;
+            if (_input.move == Vector2.zero || isSkilling) targetSpeed = 0.0f;
 
             // a reference to the players current horizontal velocity
             float currentHorizontalSpeed = new Vector3(_controller.velocity.x, 0.0f, _controller.velocity.z).magnitude;
@@ -263,7 +278,7 @@ namespace StarterAssets
 
             // note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
             // if there is a move input rotate player when the player is moving
-            if (_input.move != Vector2.zero)
+            if (_input.move != Vector2.zero && isSkilling == false)
             {
                 _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
                                   _mainCamera.transform.eulerAngles.y;
@@ -431,13 +446,14 @@ namespace StarterAssets
 
 
 
-
+        // 일반공격 
         public void OnAttackEnter()
         {
             if(isAttacking == false)
             {
                 isAttacking = true;
                 Weapon.bAttacking = true;
+
                 _animator.SetTrigger(_animIDAttack);
             }
         }
@@ -446,6 +462,49 @@ namespace StarterAssets
         {
             Weapon.bAttacking = false;
             isAttacking = false;
+        }
+
+        // 스킬공격
+        public void OnSkillEnter()
+        {
+            // 게이지를 채워야 사용할 수 있다
+            if (Weapon.CanSkill() == false)
+            {
+                CinemachineShake.Instance.ShakeCamera();
+                return;
+            }
+
+            if (isAttacking == false)
+            {
+                isAttacking = true;
+                
+                Weapon.bSkilling = true;
+                Weapon.bArmor = true;
+                Weapon.ResetGauge();
+                Weapon.SkillVfx(true);
+
+                // 90도 눕혀주기
+                rY = gameObject.transform.rotation.y;
+                Vector3 r = new Vector3(90.0f, rY, 0.0f);
+                transform.Rotate(r);
+
+                _animator.SetTrigger(_animIDSkill);
+                isSkilling = true;
+            }
+        }
+
+        public void OnSkillExit()
+        {
+            Weapon.bSkilling = false;
+            Weapon.bArmor = false;
+            Weapon.SkillVfx(false);
+            isAttacking = false;
+
+            // 다시 새우기
+            Vector3 r = new Vector3(0.0f, rY, 0.0f);
+            transform.rotation = Quaternion.Euler(r);
+
+            isSkilling = false;
         }
 
         public void OnHitAnimation()
