@@ -37,6 +37,7 @@ public class GOTWeapon : MonoBehaviour
     int _currentHp = 10;
 
     public bool bArmor = false;
+    public bool bDead = false;
 
     Collider _col;
     ThirdPersonController _player;
@@ -127,6 +128,11 @@ public class GOTWeapon : MonoBehaviour
         // 적이 죽으면 Weapon.IncreaseKillCount() 하도록 함 (OnHit때 this 전달)
         _killCount++;
         Txt_Kill.text = $"Kill : {_killCount}";
+
+        if(_killCount == 20)
+        {
+            GOTGameManager.Instance.OpenClearUI(true);
+        }
     }
 
     public void ResetGauge()
@@ -139,11 +145,24 @@ public class GOTWeapon : MonoBehaviour
     public void OnHit(Vector3 hitPoint)
     {
         // 무적일땐 맞지 않는다
-        if (bArmor) return;
+        if (bArmor || bDead) return;
 
-        _player.OnHitAnimation();
-        _currentHp = Mathf.Clamp(_currentHp - 1, 0, _maxHp);
-        Slider_Hp.value = (float)_currentHp / (float)_maxHp;
+        
+        if (_currentHp <= 0)
+        {
+            // 죽었을때
+            _player.OnDeadAnimation();
+            Slider_Hp.value = 0;
+
+            bDead = true;
+            GOTGameManager.Instance.OpenClearUI(false);
+        }
+        else
+        {
+            _player.OnHitAnimation();
+            _currentHp = Mathf.Clamp(_currentHp - 1, 0, _maxHp);
+            Slider_Hp.value = (float)_currentHp / (float)_maxHp;
+        }
     }
 
     public bool CanSkill()

@@ -104,6 +104,7 @@ namespace StarterAssets
         private int _animIDAttack;
         private int _animIDSkill;
         private int _animIDHit;
+        private int _animIDDead;
         bool isAttacking = false;
         bool isSkilling = false;
         public GOTWeapon Weapon;
@@ -178,7 +179,7 @@ namespace StarterAssets
             // 리지드바디 짜증나서 그냥 이렇게 함 ㅠ
             if(isSkilling)
             {
-                transform.position += (transform.up.normalized * 20.0f * Time.deltaTime);
+                transform.position += (transform.up.normalized * 50.0f * Time.deltaTime);
             }
         }
 
@@ -198,6 +199,7 @@ namespace StarterAssets
             _animIDAttack = Animator.StringToHash("Attack");
             _animIDSkill = Animator.StringToHash("Skill");
             _animIDHit = Animator.StringToHash("Hit");
+            _animIDDead = Animator.StringToHash("Dead");
         }
 
         private void GroundedCheck()
@@ -511,6 +513,13 @@ namespace StarterAssets
         {
             _animator.SetTrigger(_animIDHit);
             OnAttackExit();
+        }
+
+        public void OnDeadAnimation()
+        {
+            _animator.SetTrigger(_animIDDead);
+            OnAttackExit();
+
         }
     }
 }

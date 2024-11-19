@@ -32,6 +32,12 @@ public class GOTEnemy : MonoBehaviour
        _rb = GetComponentInChildren<Rigidbody>();
 
        _player = FindObjectOfType<ThirdPersonController>();
+
+
+        float randomAttackSpeed = Random.Range(1.0f, 1.5f);
+        float randomMoveSpeed = Random.Range(0.7f, 1.4f);
+        _anim.SetFloat("AttackSpeed", randomAttackSpeed);
+        _anim.SetFloat("MoveSpeed", randomMoveSpeed);
     }
 
 
@@ -41,6 +47,12 @@ public class GOTEnemy : MonoBehaviour
         
         if (_player != null)
         {
+            if (_player.Weapon.bDead == true)
+            {
+                _anim.SetBool("Move", false);
+                return;
+            }
+            
             // 플레이어가 있는곳으로 이동
             _nav.SetDestination(_player.transform.position);
 
@@ -128,7 +140,7 @@ public class GOTEnemy : MonoBehaviour
     // 무한 연속공격(?) 방지
     IEnumerator SetIsAttackingFalse()
     {
-        yield return new WaitForSeconds(3.0f);
+        yield return new WaitForSeconds(Random.Range(1.0f, 3.0f));
         isAttacking = false;
     }
 }
